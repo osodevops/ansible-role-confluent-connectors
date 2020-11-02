@@ -1,2 +1,64 @@
-# ansible-role-confluent-connectors
-An automated way of displaying, configuring and deleting connectors
+# Ansible Role Confluent Connectors
+Ansible role to install / delete Confluent Connectors from json source files.
+
+## Requirements
+Ensure that the validated json payload files ready and copied into the correct environment
+
+#### Adding new replicator jobs
+Add the new json payload files to location `ansible-role-confluent-connectors/files/<env_name>/`
+
+<env_name> can be 
+* dev
+* prod
+
+#### Removing existing replicatos jobs
+Remove the respective JSON payload file for the job to be deleted from location `ansible-role-confluent-connectors/files/<env_name>/`
+
+#### 1. Choose an enviroment
+Scope the inital enviroment where you want to submit/remove the replicator jobs. 
+For the example below we consider the `dev` enviroment
+
+#### 2. Run ansible playbook for adding/deleting the connectors. 
+Create a playbook which uses the `ansible-role-confluent-connectors`
+##### Example Playbook
+    ---
+    #   * myenv should be passed an extra variable to ansible-playbook
+    #   * hostlist should be passed an extra variable to ansible-playbook
+    #   HOW TO RUN:
+    #   CONFLUENT DEV CONNECT: 
+    #      ansible-playbook -i confluent_connect_inventory  -kK -e hostlist="dev" -e myenv="dev" confluent_connectors.yml
+    #
+    #   CONFLUENT PROD CONNECT: 
+    #      ansible-playbook -i confluent_connect_inventory  -kK -e hostlist="prod" -e myenv="prod" confluent_connectors.yml
+    #
+    #   where localinventory is a custom inventory with connect nodes.
+    
+    - hosts: "{{ hostlist }}"
+      become: yes
+      gather_facts: yes
+      run_once: yes
+      vars:
+        env_name: "{{ myenv }}"
+      roles:
+        - sionsmith.confluent_connectors
+
+    
+Run below command which takes care of adding/removing the replicators based on available json payload files in `ansible-role-confluent-connectors/files/dev/` location for dev
+```
+ansible-playbook -i localinventory -kK -e hostlist="dev" -e myenv="dev" example.yml
+```
+This will take care of connecting to one of the available connect node and manages the replicators.
+
+Please note that above steps manages the jobs which have been defined in location `ansible-role-confluent-connectors/files/<env_name>/`
+
+Where localinventory file will look like below.
+```
+[dev]
+connect0.dev.local
+connect1.dev.local
+
+[prod]
+connect0.prod
+connect1.prod
+
+```

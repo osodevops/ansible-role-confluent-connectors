@@ -1,0 +1,5 @@
+---
+
+# Connect settings
+target_dir: "/tmp/connector_payloads"
+connect_port: 8083

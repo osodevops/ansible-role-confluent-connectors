@@ -1,0 +1,18 @@
+{
+   "name":"replicator_1_without_partition_preservation",
+   "config":{
+      "connector.class":"io.confluent.connect.replicator.ReplicatorSourceConnector",
+      "confluent.license":"xxxx",
+      "src.kafka.bootstrap.servers":"xxxx:9092",
+      "key.converter":"io.confluent.connect.replicator.util.ByteArrayConverter",
+      "value.converter":"io.confluent.connect.replicator.util.ByteArrayConverter",
+      "provenance.header.enable": true,
+      "dest.kafka.bootstrap.servers":"xxxx:9092,xxxx:9092",
+      "topic.whitelist":"replicator_1_without_partition_preservation",
+      "topic.rename.format":"replicator_1_without_partition_preservation",
+      "offset.timestamps.commit":"false",
+      "topic.config.sync":"false",
+      "topic.preserve.partitions": "false",
+      "tasks.max":"4"
+    }
+}

@@ -1,0 +1,90 @@
+---
+#
+#  This playbook does following tasks
+#  1. Start connect service if its not running
+#  2. Get the running connectors list
+#  3. Get the intended connectors list from ../files/{envname}/*json files
+#  4. Delete the running connectors which are not present in intended connectors list
+#  5. Submit the connectors using json payload files from location ../files/{envname}/
+#
+
+- name: Ensure sure that connect service is running
+  service:
+    name: connect
+    state: started
+
+- name: Wait for connect service to listen on host {{ansible_fqdn}} and port {{connect_port}}
+  wait_for:
+    host: "{{ansible_default_ipv4.address}}"
+    port: "{{ connect_port }}"
+
+- name: Get running connectors list
+  shell: curl -k -X GET https://{{ ansible_fqdn }}:{{ connect_port }}/connectors | tr -d '[' | tr -d ']' | tr -d '"' | tr -s ',' '\n'
+  args:
+    warn: false
+  register: running_connectors
+
+- name: List running connectors
+  shell: echo "{{ item }}"
+  with_items:
+    - "{{ running_connectors.stdout_lines }}"
+
+- name: Copy the json payload files to remote connect machine where job will be submitted
+  template:
+    src: "{{ item }}"
+    dest: "{{ target_dir }}/"
+  with_fileglob:
+    - "{{ env_name }}/*json"
+
+- name: Get intended connectors list
+  shell: grep -R '"name"' "{{ target_dir }}" | tr -d '[" ,]' | cut -d ':' -f3
+  args:
+    warn: false
+  register: intended_connectors
+
+- name: List Intended connectors
+  shell: echo "{{ item }}"
+  with_items:
+    - "{{ intended_connectors.stdout_lines }}"
+
+- name: Delete the connector if it's present in running list but not in intended list
+  shell: curl -k -X DELETE https://{{ ansible_fqdn }}:{{ connect_port }}/connectors/{{ item }}
+  with_items:
+    -  "{{ running_connectors.stdout_lines | difference(intended_connectors.stdout_lines) }}"
+  args:
+    warn: false
+
+- name: Get the payload files list
+  shell: ls {{ target_dir }}
+  register: payload_files
+
+- name: Submit connector jobs using json payload files
+  shell: curl -k -X POST https://{{ ansible_fqdn }}:{{ connect_port }}/connectors --header "content-Type:application/json" -d @"{{ target_dir }}/{{ item }}"
+  with_items:
+    - "{{ payload_files.stdout_lines }}"
+  args:
+    warn: false
+
+- name: Delete the json payload files from temp location
+  file:
+    path: "{{ target_dir }}/{{ item }}"
+    state: absent
+  with_items:
+    - "{{ payload_files.stdout_lines }}"
+
+- name: Regenerate the running connectors list
+  shell: curl -k -X GET https://{{ ansible_fqdn }}:{{ connect_port }}/connectors | tr -d '[' | tr -d ']' | tr -d '"' | tr -s ',' '\n'
+  args:
+    warn: false
+  register: new_running_connectors
+
+- name: List of new running connectors
+  shell: echo "{{ item }}"
+  with_items:
+    - "{{ new_running_connectors.stdout_lines }}"
+
+- name: Non-running intended connectors
+  shell: echo "{{ item }}"
+  with_items:
+    - "{{ intended_connectors.stdout_lines | difference(new_running_connectors.stdout_lines) }}"
+
