@@ -61,17 +61,20 @@ Create a playbook which uses the `ansible-role-confluent-connectors`
 
 ## Examples
 
-#   * myenv should be passed an extra variable to ansible-playbook
-#   * hostlist should be passed an extra variable to ansible-playbook
-#   HOW TO RUN:
-#   CONFLUENT DEV CONNECT: 
-#      ansible-playbook -i confluent_connect_inventory  -kK -e hostlist="dev" -e myenv="dev" confluent_connectors.yml
-#
-#   CONFLUENT PROD CONNECT: 
-#      ansible-playbook -i confluent_connect_inventory  -kK -e hostlist="prod" -e myenv="prod" confluent_connectors.yml
-#
-#   where localinventory is a custom inventory with connect nodes.
+* myenv should be passed an extra variable to ansible-playbook
+* hostlist should be passed an extra variable to ansible-playbook
+####  HOW TO RUN:
+CONFLUENT DEV CONNECT: 
+    ansible-playbook -i confluent_connect_inventory  -kK -e hostlist="dev" -e myenv="dev" confluent_connectors.yml
 
+CONFLUENT PROD CONNECT: 
+
+```
+ansible-playbook -i confluent_connect_inventory  -kK -e hostlist="prod" -e myenv="prod" confluent_connectors.yml
+```
+where localinventory is a custom inventory with connect nodes.
+
+```
 - hosts: "{{ hostlist }}"
   become: yes
   gather_facts: yes 
@@ -80,16 +83,19 @@ Create a playbook which uses the `ansible-role-confluent-connectors`
     env_name: "{{ myenv }}"
   roles:
     - sionsmith.confluent_connectors
+```
 
 Run below command which takes care of adding/removing the replicators based on available json payload files in `ansible-role-confluent-connectors/files/dev/` location for dev
+
 ```
-  ansible-playbook -i localinventory -kK -e hostlist="dev" -e myenv="dev" example.yml
+ansible-playbook -i localinventory -kK -e hostlist="dev" -e myenv="dev" example.yml
 ```
 This will take care of connecting to one of the available connect node and manages the replicators.
 
 Please note that above steps manages the jobs which have been defined in location `ansible-role-confluent-connectors/files/<env_name>/`
 
 Where localinventory file will look like below.
+
 ```
 [dev]
 connect0.dev.local
