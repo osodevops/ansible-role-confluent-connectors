@@ -1,6 +1,6 @@
 
 <!-- markdownlint-disable -->
-# 
+# Ansible Role Confluent Connectors
 <!-- markdownlint-restore -->
 
 [![README Header][readme_header_img]][readme_header_link]
@@ -25,7 +25,7 @@
 
 
 -->
-Add here
+Ansible role to install / delete Confluent Connectors from json source files.
 
 ---
 
@@ -36,47 +36,80 @@ Add here
 
 ## Usage
 
-### Requirements
-None.
-### Role Variables
-Some information
-```yaml
-  ---
-```
+## Requirements
+Ensure that the validated json payload files ready and copied into the correct environment
+
+#### Adding new replicator jobs
+Add the new json payload files to location `ansible-role-confluent-connectors/files/<env_name>/`
+
+<env_name> can be 
+* dev
+* prod
+
+#### Removing existing replicatos jobs
+Remove the respective JSON payload file for the job to be deleted from location `ansible-role-confluent-connectors/files/<env_name>/`
+
+#### 1. Choose an enviroment
+Scope the inital enviroment where you want to submit/remove the replicator jobs. 
+For the example below we consider the `dev` enviroment
+
+#### 2. Run ansible playbook for adding/deleting the connectors. 
+Create a playbook which uses the `ansible-role-confluent-connectors`
 
 
 
 
 ## Examples
 
-Follow this example
-```yaml
-    ---
+#   * myenv should be passed an extra variable to ansible-playbook
+#   * hostlist should be passed an extra variable to ansible-playbook
+#   HOW TO RUN:
+#   CONFLUENT DEV CONNECT: 
+#      ansible-playbook -i confluent_connect_inventory  -kK -e hostlist="dev" -e myenv="dev" confluent_connectors.yml
+#
+#   CONFLUENT PROD CONNECT: 
+#      ansible-playbook -i confluent_connect_inventory  -kK -e hostlist="prod" -e myenv="prod" confluent_connectors.yml
+#
+#   where localinventory is a custom inventory with connect nodes.
+
+- hosts: "{{ hostlist }}"
+  become: yes
+  gather_facts: yes 
+  run_once: yes
+  vars:
+    env_name: "{{ myenv }}"
+  roles:
+    - sionsmith.confluent_connectors
+
+Run below command which takes care of adding/removing the replicators based on available json payload files in `ansible-role-confluent-connectors/files/dev/` location for dev
+```
+  ansible-playbook -i localinventory -kK -e hostlist="dev" -e myenv="dev" example.yml
+```
+This will take care of connecting to one of the available connect node and manages the replicators.
+
+Please note that above steps manages the jobs which have been defined in location `ansible-role-confluent-connectors/files/<env_name>/`
+
+Where localinventory file will look like below.
+```
+[dev]
+connect0.dev.local
+connect1.dev.local
+
+[prod]
+connect0.prod
+connect1.prod
 ```
 
 
 
 
 
-## Related Projects
-
-Check out these related projects.
-
-- [](https://github.com/osodevops/) - 
-
-
-
-## Customer Stories
-
-Discover our customer stories and see what OSO can deliver for your business.
-
-- [](https://) - 
 
 
 
 ## Need some help
 
-File a GitHub [issue](https://github.com/osodevops/some-repo/issues), send us an [email][email] or [tweet us][twitter].
+File a GitHub [issue](https://github.com/osodevops/ansible-role-confluent-connectors/issues), send us an [email][email] or [tweet us][twitter].
 
 ## The legals
 
@@ -93,13 +126,13 @@ Looking for support applying emerging technologies in your business? We’d love
 Start adopting new technologies by checking out [our other projects][github], [follow us on twitter][twitter], [join our team of leaders and challengers][careers], or [contact us][contact] to find the right technology to support your business.[![Beacon][beacon]][website]
 
   [logo]: https://oso-public-resources.s3.eu-west-1.amazonaws.com/oso-logo-green.png
-  [website]: https://oso.sh?utm_source=github&utm_medium=readme&utm_campaign=osodevops/some-repo&utm_content=website
-  [github]: https://github.com/osodevops?utm_source=github&utm_medium=readme&utm_campaign=osodevops/some-repo&utm_content=github
-  [careers]: https://oso.sh/careers/?utm_source=github&utm_medium=readme&utm_campaign=osodevops/some-repo&utm_content=careers
-  [contact]: https://oso.sh/contact/?utm_source=github&utm_medium=readme&utm_campaign=osodevops/some-repo&utm_content=contact
-  [linkedin]: https://www.linkedin.com/company/oso-devops?utm_source=github&utm_medium=readme&utm_campaign=osodevops/some-repo&utm_content=linkedin
-  [twitter]: https://twitter.com/osodevops?utm_source=github&utm_medium=readme&utm_campaign=osodevops/some-repo&utm_content=twitter
-  [email]: mailto:enquiries@oso.sh?utm_source=github&utm_medium=readme&utm_campaign=osodevops/some-repo&utm_content=email
+  [website]: https://oso.sh?utm_source=github&utm_medium=readme&utm_campaign=osodevops/ansible-role-confluent-connectors&utm_content=website
+  [github]: https://github.com/osodevops?utm_source=github&utm_medium=readme&utm_campaign=osodevops/ansible-role-confluent-connectors&utm_content=github
+  [careers]: https://oso.sh/careers/?utm_source=github&utm_medium=readme&utm_campaign=osodevops/ansible-role-confluent-connectors&utm_content=careers
+  [contact]: https://oso.sh/contact/?utm_source=github&utm_medium=readme&utm_campaign=osodevops/ansible-role-confluent-connectors&utm_content=contact
+  [linkedin]: https://www.linkedin.com/company/oso-devops?utm_source=github&utm_medium=readme&utm_campaign=osodevops/ansible-role-confluent-connectors&utm_content=linkedin
+  [twitter]: https://twitter.com/osodevops?utm_source=github&utm_medium=readme&utm_campaign=osodevops/ansible-role-confluent-connectors&utm_content=twitter
+  [email]: mailto:enquiries@oso.sh?utm_source=github&utm_medium=readme&utm_campaign=osodevops/ansible-role-confluent-connectors&utm_content=email
   [readme_header_img]: https://oso-public-resources.s3.eu-west-1.amazonaws.com/oso-animation.gif
-  [readme_header_link]: https://oso.sh/what-we-do/?utm_source=github&utm_medium=readme&utm_campaign=osodevops/some-repo&utm_content=readme_header_link
-  [beacon]: https://github-analyics.ew.r.appspot.com/G-WV0Q3HYW08/osodevops/some-repo?pixel&cs=github&cm=readme&an=some-repo
+  [readme_header_link]: https://oso.sh/what-we-do/?utm_source=github&utm_medium=readme&utm_campaign=osodevops/ansible-role-confluent-connectors&utm_content=readme_header_link
+  [beacon]: https://github-analyics.ew.r.appspot.com/G-WV0Q3HYW08/osodevops/ansible-role-confluent-connectors?pixel&cs=github&cm=readme&an=ansible-role-confluent-connectors
